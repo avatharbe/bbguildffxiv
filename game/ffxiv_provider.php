@@ -12,8 +12,6 @@
 namespace avathar\bbguildffxiv\game;
 
 use avathar\bbguild\model\games\game_provider_interface;
-use avathar\bbguild\model\games\game_install_interface;
-use avathar\bbguild\model\games\game_api_interface;
 
 /**
  * Class ffxiv_provider
