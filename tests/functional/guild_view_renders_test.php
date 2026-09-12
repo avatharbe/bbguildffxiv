@@ -21,10 +21,12 @@
 class avathar_bbguildffxiv_guild_view_renders_test extends phpbb_functional_test_case
 {
 	/**
-	 * Large fixed id, distinct from bbguild core's own sample guild
+	 * Fixed id, distinct from bbguild core's own sample guild
 	 * (id=1, game_id='custom', seeded unconditionally by core's install).
+	 * Must stay within bb_guild.id's USINT range (signed SMALLINT on
+	 * Postgres, max 32767) — 92101 overflowed it and failed CI.
 	 */
-	const GUILD_ID = 92101;
+	const GUILD_ID = 20243;
 
 	static protected function setup_extensions()
 	{
