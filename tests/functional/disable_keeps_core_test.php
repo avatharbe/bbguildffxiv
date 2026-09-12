@@ -1,0 +1,54 @@
+<?php
+/**
+ * bbGuild FFXIV Extension — plugin disable keeps core intact
+ *
+ * @package   bbguildffxiv v2.0
+ * @copyright 2026 avathar.be
+ * @license   http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
+ */
+
+/**
+ * Enables bbguild core + bbguildffxiv, disables bbguildffxiv, and asserts
+ * core keeps working. The control here is bbguild core's own "Test Guild"
+ * (id=1, game_id='custom'), seeded unconditionally by core's own
+ * migration regardless of which game plugins are installed — no
+ * bbguildffxiv-specific fixture is needed to prove this.
+ *
+ * Per functional-tests.md, this is the single most important guardrail
+ * for a non-flagship plugin: disabling it must never cascade-break
+ * bbguild core or an unrelated guild's page.
+ *
+ * @group functional
+ */
+class avathar_bbguildffxiv_disable_keeps_core_test extends phpbb_functional_test_case
+{
+	/** bbguild core's own sample guild, seeded on core install. */
+	const CORE_CONTROL_GUILD_ID = 1;
+
+	static protected function setup_extensions()
+	{
+		return array('avathar/bbguild', 'avathar/bbguildffxiv');
+	}
+
+	public function test_disabling_ffxiv_does_not_break_core()
+	{
+		$this->login('admin');
+		$this->admin_login();
+
+		self::request('GET', 'app.php/guild/' . self::CORE_CONTROL_GUILD_ID, array(), false);
+		self::assert_response_status_code(200);
+
+		$this->disable_ext('avathar/bbguildffxiv');
+
+		self::request('GET', 'app.php/guild/' . self::CORE_CONTROL_GUILD_ID, array(), false);
+		self::assert_response_status_code(200);
+
+		self::request('GET', 'adm/index.php?i=-avathar-bbguild-acp-game_module&mode=listgames&sid=' . $this->sid, array(), false);
+		$status = (int) self::$client->getResponse()->getStatus();
+		$this->assertLessThan(500, $status, 'bbguild core ACP game list must still load with bbguildffxiv disabled');
+
+		$this->install_ext('avathar/bbguildffxiv');
+
+		$this->logout();
+	}
+}
