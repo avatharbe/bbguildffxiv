@@ -79,6 +79,26 @@ class avathar_bbguildffxiv_guild_view_renders_test extends phpbb_functional_test
 			'player_guild_id' => self::GUILD_ID,
 			'player_status'   => 1,
 		)));
+
+		// A fresh guild has no portal layout at all — bbguild core only
+		// auto-seeds a roster module for its own sample guild_id=1 (see
+		// migrations/v200b3::insert_sample_data()). Without this row the
+		// roster module never renders and the player row above is invisible.
+		$db->sql_query('DELETE FROM ' . $this->get_table_prefix() . 'bb_portal_modules WHERE guild_id = ' . self::GUILD_ID);
+		$db->sql_multi_insert($this->get_table_prefix() . 'bb_portal_modules', array(array(
+			'guild_id'            => self::GUILD_ID,
+			'module_classname'    => '\avathar\bbguild\portal\modules\roster',
+			'module_column'       => 2,
+			'module_order'        => 1,
+			'module_name'         => 'BBGUILD_PORTAL_ROSTER',
+			'module_image_src'    => '',
+			'module_icon'         => '',
+			'module_icon_size'    => 16,
+			'module_image_width'  => 16,
+			'module_image_height' => 16,
+			'module_group_ids'    => '',
+			'module_status'       => 1,
+		)));
 	}
 
 	public function test_guild_view_renders_ffxiv_roster_row()
