@@ -11,12 +11,19 @@ use PHPUnit\Framework\TestCase;
 use avathar\bbguildffxiv\game\ffxiv_installer;
 
 /**
- * ffxiv_installer only overrides install_factions(), install_classes(),
- * and install_races() — it has no install_roles() override (the default
- * DPS/Healer/Tank roles from abstract_game_install are used unchanged)
- * and no install_specs() override (bbguildffxiv has no specializations
- * seeded yet, see the family's issue #367). Only the three overridden
- * methods are exercised here.
+ * ffxiv_installer overrides install_factions(), install_classes(),
+ * install_races(), and install_specs() — it has no install_roles()
+ * override (the default DPS/Healer/Tank roles from abstract_game_install
+ * are used unchanged).
+ *
+ * install_specs() (issue #331 opt-in / this plugin's issue #7) is a
+ * deliberate empty-catalog override: FFXIV's Class → Job evolution is
+ * already fully captured as flat, terminal class_id rows by
+ * install_classes() above (each Job — Paladin, Dragoon, Sage, Viper,
+ * Pictomancer, etc. — is its own class_id), and FFXIV has no further
+ * per-Job spec/talent-tree layer to seed on top of that (unlike WoW specs
+ * or GW2 Elite Specializations). See ffxiv_provider::spec_catalog()'s
+ * docblock for the full reasoning.
  */
 class ffxiv_installer_test extends TestCase
 {
@@ -81,6 +88,29 @@ class ffxiv_installer_test extends TestCase
 		$method = new \ReflectionMethod(ffxiv_installer::class, $method_name);
 		$method->setAccessible(true);
 		$method->invoke($this->installer);
+	}
+
+	/**
+	 * Set (key => value) or remove (value === null) a single entry in the
+	 * installer's table_names map, on top of whatever setUp() put there.
+	 */
+	private function set_table_name(string $key, ?string $value): void
+	{
+		$ref = new \ReflectionClass($this->installer);
+		$tn = $ref->getProperty('table_names');
+		$tn->setAccessible(true);
+		$current = $tn->getValue($this->installer);
+
+		if ($value === null)
+		{
+			unset($current[$key]);
+		}
+		else
+		{
+			$current[$key] = $value;
+		}
+
+		$tn->setValue($this->installer, $current);
 	}
 
 	// ── Factions ───────────────────────────────────────────
@@ -236,5 +266,69 @@ class ffxiv_installer_test extends TestCase
 		{
 			$this->assertSame(9, $count, "$lang has 9 race name entries");
 		}
+	}
+
+	// ── Specializations (install_specs) ─────────────────────
+	//
+	// ffxiv_provider::spec_catalog() is deliberately empty — FFXIV's
+	// Class -> Job evolution is already fully modeled as flat, terminal
+	// class_id rows by install_classes() above, and a Job has no further
+	// named sub-spec/talent-tree layer in the real game (unlike WoW specs
+	// or GW2 Elite Specializations). Both branches of install_specs()'s
+	// "is the table wired in" guard are still covered here, mirroring
+	// bbguildgw2_installer_test.php's shape, so the no-op behavior is
+	// pinned down and regressions are caught if a real catalog is ever
+	// added later.
+
+	public function test_install_specs_no_op_when_table_wired(): void
+	{
+		$this->set_table_name('bb_specializations_table', 'phpbb_bb_specializations');
+
+		$this->invoke_protected('install_specs');
+
+		$this->assertCount(0, $this->inserted, 'install_specs() must not insert anything: FFXIV has no spec layer beyond the Job itself');
+	}
+
+	public function test_install_specs_skips_when_table_not_wired(): void
+	{
+		$this->set_table_name('bb_specializations_table', null);
+
+		$this->invoke_protected('install_specs');
+
+		$this->assertCount(0, $this->inserted, 'install_specs() must no-op when bb_specializations_table is not in table_names');
+	}
+
+	public function test_ffxiv_provider_spec_catalog_is_empty(): void
+	{
+		$this->assertSame(array(), \avathar\bbguildffxiv\game\ffxiv_provider::spec_catalog(), 'FFXIV has no specialization layer beyond the Job itself (already modeled as terminal class_id rows)');
+	}
+
+	public function test_ffxiv_provider_spec_label(): void
+	{
+		$this->assertSame('Job', (new \ReflectionClass(\avathar\bbguildffxiv\game\ffxiv_provider::class))
+			->getMethod('get_spec_label')
+			->invoke($this->make_provider()));
+	}
+
+	/**
+	 * Build a real ffxiv_provider instance for the get_spec_label() /
+	 * get_specializations() interface-method tests, which are plain
+	 * instance methods (unlike the static spec_catalog() helper).
+	 */
+	private function make_provider(): \avathar\bbguildffxiv\game\ffxiv_provider
+	{
+		$ext_manager = $this->getMockBuilder(\phpbb\extension\manager::class)
+			->disableOriginalConstructor()
+			->getMock();
+
+		return new \avathar\bbguildffxiv\game\ffxiv_provider($this->installer, $ext_manager);
+	}
+
+	public function test_ffxiv_provider_get_specializations_matches_static_catalog(): void
+	{
+		$this->assertSame(
+			\avathar\bbguildffxiv\game\ffxiv_provider::spec_catalog(),
+			$this->make_provider()->get_specializations()
+		);
 	}
 }

@@ -242,4 +242,47 @@ class ffxiv_installer extends abstract_game_install
 
 		$this->db->sql_multi_insert($this->table('bb_language_table'), $sql_ary);
 	}
+
+	/**
+	 * Installs FFXIV specializations (issue #331 opt-in / issue #7).
+	 *
+	 * FFXIV has no specialization layer beyond the Job itself — see the
+	 * docblock on ffxiv_provider::spec_catalog() for why this deliberately
+	 * seeds nothing. Kept as a real override (rather than relying on the
+	 * abstract_game_install no-op default) so the empty-catalog decision
+	 * is visible and documented here, and so this plugin follows the same
+	 * shape as bbguildgw2's install_specs() should a spec layer ever be
+	 * added later.
+	 *
+	 * Skipped if bb_specializations_table isn't wired in (older core
+	 * installs that haven't run migration v200b4 yet).
+	 */
+	protected function install_specs(): void
+	{
+		if (!isset($this->table_names['bb_specializations_table']))
+		{
+			return;
+		}
+
+		$rows = [];
+		foreach (ffxiv_provider::spec_catalog() as $class_id => $specs)
+		{
+			foreach ($specs as $spec)
+			{
+				$rows[] = [
+					'game_id'    => $this->game_id,
+					'class_id'   => (int) $class_id,
+					'role_id'    => (int) $spec['role_id'],
+					'spec_name'  => (string) $spec['spec_name'],
+					'spec_icon'  => (string) $spec['spec_icon'],
+					'spec_order' => (int) $spec['spec_order'],
+				];
+			}
+		}
+		if (!$rows)
+		{
+			return;
+		}
+		$this->db->sql_multi_insert($this->table('bb_specializations_table'), $rows);
+	}
 }
