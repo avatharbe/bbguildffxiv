@@ -23,20 +23,20 @@ DELETE FROM phpbb_bb_classes WHERE game_id = 'ffxiv';
 DELETE FROM phpbb_bb_races WHERE game_id = 'ffxiv';
 DELETE FROM phpbb_bb_factions WHERE game_id = 'ffxiv';
 DELETE FROM phpbb_bb_gameroles WHERE game_id = 'ffxiv';
-DELETE FROM phpbb_bb_players WHERE player_game_id = 'ffxiv';
+DELETE FROM phpbb_bb_players WHERE game_id = 'ffxiv';
 DELETE FROM phpbb_bb_games WHERE game_id = 'ffxiv';
 
 -- ----------------------------------------------------------------------------
 -- 2. phpBB extension registration
 -- ----------------------------------------------------------------------------
 
-DELETE FROM phpbb_ext WHERE ext_name = 'avathar/bbguild_ffxiv';
+DELETE FROM phpbb_ext WHERE ext_name = 'avathar/bbguildffxiv';
 
 -- ----------------------------------------------------------------------------
 -- 3. phpBB migration tracking
 -- ----------------------------------------------------------------------------
 
-DELETE FROM phpbb_migrations WHERE migration_name LIKE '%avathar\\bbguild_ffxiv%';
+DELETE FROM phpbb_migrations WHERE migration_name LIKE '%avathar\\\\bbguildffxiv%';
 
 -- ============================================================================
 -- Done. Now purge the phpBB cache and re-enable the extension from ACP.
