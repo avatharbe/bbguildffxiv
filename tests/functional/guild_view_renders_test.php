@@ -101,7 +101,7 @@ class avathar_bbguildffxiv_guild_view_renders_test extends phpbb_functional_test
 		// backfills this for guilds created through the normal ACP flow,
 		// but a fixture inserting rows directly via SQL bypasses that flow
 		// entirely and needs to seed its own tab). Uses sql_query()+
-		// sql_nextid() rather than sql_multi_insert() so the new tab_id can
+		// sql_last_inserted_id() rather than sql_multi_insert() so the new tab_id can
 		// be read back for the module row below.
 		$db->sql_query('DELETE FROM ' . $this->get_table_prefix() . 'bb_portal_tabs WHERE guild_id = ' . self::GUILD_ID);
 		$db->sql_query('INSERT INTO ' . $this->get_table_prefix() . 'bb_portal_tabs ' . $db->sql_build_array('INSERT', array(
@@ -111,7 +111,7 @@ class avathar_bbguildffxiv_guild_view_renders_test extends phpbb_functional_test
 			'tab_order'  => 0,
 			'tab_status' => 1,
 		)));
-		$tab_id = (int) $db->sql_nextid();
+		$tab_id = (int) $db->sql_last_inserted_id();
 
 		// A fresh guild has no portal layout at all — bbguild core only
 		// auto-seeds a roster module for its own sample guild_id=1 (see
