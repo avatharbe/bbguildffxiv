@@ -1,11 +1,5 @@
 # bbGuild - Final Fantasy XIV
 
-**Current version:** 2.0.0-rc2 (release candidate)
-
-[![Tests](https://github.com/avatharbe/bbguildffxiv/actions/workflows/tests.yml/badge.svg)](https://github.com/avatharbe/bbguildffxiv/actions/workflows/tests.yml)
-
-**Documentation:** [avatharbe.github.io/bbguildffxiv](https://avatharbe.github.io/bbguildffxiv/)
-
 Final Fantasy XIV doesn't even call them guilds — they're Free Companies — and Savage/Ultimate raiding culture runs on tightly coordinated static groups where knowing who plays what matters. bbguildffxiv covers all 27 classes and jobs — from the A Realm Reborn base classes through every expansion job up to Dawntrail (Viper and Pictomancer) — and all 8 races (Au Ra, Hrothgar, and Viera), plus the three Grand Companies and boss/zone links to the official Lodestone. It's built to give your static and your FC roster a proper home on the forum, not just a pinned post nobody updates.
 
 ## Features
