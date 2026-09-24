@@ -24,14 +24,13 @@ class ffxiv_icon_coverage_test extends TestCase
 	 * Gaps tracked in #8 and deliberately still open:
 	 * Reaper and Sage (Endwalker) plus Viper and Pictomancer (Dawntrail)
 	 * are absent from XIVAPI v1, whose lighter-gold tone the shipped icons
-	 * match; the v2 raw range has them in a visibly darker tone. ffxiv_unknown
-	 * has no upstream source at all and needs authoring (avathar/bbguild#391).
+	 * match; the v2 raw range has them in a visibly darker tone. ffxiv_unknown is
+	 * an authored placeholder (avathar/bbguild#391), so it is no longer a gap.
 	 */
 	private const KNOWN_GAPS = array(
 		'ffxiv_pictomancer',
 		'ffxiv_reaper',
 		'ffxiv_sage',
-		'ffxiv_unknown',
 		'ffxiv_viper',
 	);
 
